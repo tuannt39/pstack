@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync, symlinkSync, cpSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,7 +50,10 @@ interface CommandOptions {
 
 interface ExtensionAPI {
 	on(event: "resources_discover", handler: () => Promise<ResourceDiscoverResult>): void;
-	on(event: "session_start" | "session_compact" | "agent_end" | "session_switch", handler: (event?: unknown, ctx?: CommandContext) => Promise<void>): void;
+	on(
+		event: "session_start" | "session_compact" | "agent_end" | "session_switch",
+		handler: (event?: unknown, ctx?: CommandContext) => Promise<void>,
+	): void;
 	on(
 		event: "context",
 		handler: (event: ContextEvent) => Promise<{ messages: ContextMessage[] } | undefined>,
@@ -58,8 +62,34 @@ interface ExtensionAPI {
 	sendUserMessage(message: string, options?: { expandPromptTemplates?: boolean; deliverAs?: "followUp" }): void;
 }
 
+function syncSkillsToUserAgentDir(sourceSkillsDir: string): void {
+	try {
+		const userSkillsDir = resolve(homedir(), ".omp", "agent", "skills");
+		if (!existsSync(userSkillsDir)) {
+			mkdirSync(userSkillsDir, { recursive: true });
+		}
+		const skillFolders = readdirSync(sourceSkillsDir);
+		for (const skill of skillFolders) {
+			const targetPath = resolve(userSkillsDir, skill);
+			const sourcePath = resolve(sourceSkillsDir, skill);
+			if (!existsSync(targetPath)) {
+				try {
+					symlinkSync(sourcePath, targetPath, "junction");
+				} catch {
+					cpSync(sourcePath, targetPath, { recursive: true });
+				}
+			}
+		}
+	} catch {
+		// Silent fallback if filesystem permissions restrict access
+	}
+}
+
 export default function pstackPiExtension(pi: ExtensionAPI): void {
 	let injectBootstrap = true;
+
+	// Automatically ensure skills are present in ~/.omp/agent/skills/ for prompt <skills> inclusion
+	syncSkillsToUserAgentDir(skillsDir);
 
 	pi.on("resources_discover", async () => ({
 		skillPaths: [skillsDir],
