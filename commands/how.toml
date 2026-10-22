@@ -1,0 +1,2 @@
+description = "Walkthrough of how a subsystem works and runtime flow"
+prompt = "Use /skill:how {{args}}"

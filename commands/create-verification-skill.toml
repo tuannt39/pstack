@@ -1,0 +1,2 @@
+description = "Generate project-local verification skill and feature map"
+prompt = "Use /skill:create-verification-skill {{args}}"

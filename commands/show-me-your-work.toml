@@ -1,0 +1,2 @@
+description = "Keep auditable decision trail in decision-log.tsv"
+prompt = "Use /skill:show-me-your-work {{args}}"

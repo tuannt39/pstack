@@ -1,0 +1,2 @@
+description = "Spawn N parallel candidates at same task, pick base, graft ideas"
+prompt = "Use /skill:arena {{args}}"

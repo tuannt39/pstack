@@ -1,0 +1,2 @@
+description = "Reconstruct recent working context on a topic"
+prompt = "Use /skill:recall {{args}}"

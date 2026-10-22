@@ -1,0 +1,2 @@
+description = "Archaeology across git log, issues, docs for rationale"
+prompt = "Use /skill:why {{args}}"

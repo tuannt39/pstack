@@ -1,0 +1,2 @@
+description = "Test-driven development: failing test first, then fix"
+prompt = "Use /skill:tdd {{args}}"

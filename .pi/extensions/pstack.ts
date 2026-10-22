@@ -31,13 +31,31 @@ interface ContextEvent {
 	messages: ContextMessage[];
 }
 
+interface CommandContext {
+	isIdle?: () => boolean;
+	ui?: {
+		notify?: (message: string, level?: "info" | "warning" | "error") => void;
+		setStatus?: (id: string, text: string | undefined) => void;
+		theme?: {
+			fg?: (color: string, text: string) => string;
+		};
+	};
+}
+
+interface CommandOptions {
+	description: string;
+	handler: (args: string, ctx?: CommandContext) => void | Promise<void>;
+}
+
 interface ExtensionAPI {
 	on(event: "resources_discover", handler: () => Promise<ResourceDiscoverResult>): void;
-	on(event: "session_start" | "session_compact" | "agent_end", handler: () => Promise<void>): void;
+	on(event: "session_start" | "session_compact" | "agent_end" | "session_switch", handler: (event?: unknown, ctx?: CommandContext) => Promise<void>): void;
 	on(
 		event: "context",
 		handler: (event: ContextEvent) => Promise<{ messages: ContextMessage[] } | undefined>,
 	): void;
+	registerCommand(name: string, options: CommandOptions): void;
+	sendUserMessage(message: string, options?: { expandPromptTemplates?: boolean; deliverAs?: "followUp" }): void;
 }
 
 export default function pstackPiExtension(pi: ExtensionAPI): void {
@@ -47,7 +65,12 @@ export default function pstackPiExtension(pi: ExtensionAPI): void {
 		skillPaths: [skillsDir],
 	}));
 
-	pi.on("session_start", async () => {
+	pi.on("session_start", async (_event?: unknown, ctx?: CommandContext) => {
+		injectBootstrap = true;
+		ctx?.ui?.notify?.("pstack (poteto-mode) loaded: 57 skills active", "info");
+	});
+
+	pi.on("session_switch", async (_event?: unknown, ctx?: CommandContext) => {
 		injectBootstrap = true;
 	});
 
@@ -85,6 +108,49 @@ export default function pstackPiExtension(pi: ExtensionAPI): void {
 			],
 		};
 	});
+
+	// Helper for routing slash commands to skill prompts with template expansion
+	const sendSkillAlias = (skillName: string, args: string, ctx?: CommandContext): void => {
+		const trimmedArgs = String(args || "").trim();
+		const prompt = trimmedArgs ? `${skillName} ${trimmedArgs}` : skillName;
+
+		if (ctx?.isIdle?.() === false) {
+			pi.sendUserMessage(prompt, { expandPromptTemplates: true, deliverAs: "followUp" });
+			ctx?.ui?.notify?.(`${skillName} queued as follow-up.`, "info");
+			return;
+		}
+
+		pi.sendUserMessage(prompt, { expandPromptTemplates: true });
+	};
+
+	// Register core slash commands
+	const commandsToRegister: Array<{ name: string; description: string }> = [
+		{ name: "poteto-mode", description: "Default entry point for rigorous engineering work (23 playbooks)" },
+		{ name: "poteto-help", description: "Guide to pstack setup, playbooks, skills, and principles" },
+		{ name: "how", description: "Walkthrough of how a subsystem works and runtime flow" },
+		{ name: "why", description: "Archaeology across git log, issues, docs for rationale" },
+		{ name: "architect", description: "Settle caller usage, types, and module shape before code" },
+		{ name: "arena", description: "Spawn N parallel candidates at same task, pick base, graft ideas" },
+		{ name: "swarm", description: "Fan out N parallel workers across slices, gauntlets, or races" },
+		{ name: "interrogate", description: "Adversarial multi-model code review from independent angles" },
+		{ name: "tdd", description: "Test-driven development: failing test first, then fix" },
+		{ name: "unslop", description: "Cut AI tells and tighten prose" },
+		{ name: "no-comments", description: "Strip AI narrating comments before review" },
+		{ name: "show-me-your-work", description: "Keep auditable decision trail in decision-log.tsv" },
+		{ name: "blast-radius", description: "Find what a change could break with runtime proof" },
+		{ name: "teach", description: "Plain explanation of a change or subsystem with diagrams" },
+		{ name: "recall", description: "Reconstruct recent working context on a topic" },
+		{ name: "sharpen", description: "Make a task deeper, not bigger, then rewrite prompt" },
+		{ name: "create-verification-skill", description: "Generate project-local verification skill and feature map" },
+		{ name: "maintain-verification-skill", description: "Audit and update verification skill and feature map" },
+	];
+
+	for (const cmd of commandsToRegister) {
+		pi.registerCommand(cmd.name, {
+			description: cmd.description,
+			handler: (args: string, ctx?: CommandContext) => sendSkillAlias(`/skill:${cmd.name}`, args, ctx),
+		});
+	}
 }
 
 function getBootstrapContent(): string | null {

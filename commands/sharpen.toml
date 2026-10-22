@@ -1,0 +1,2 @@
+description = "Make a task deeper, not bigger, then rewrite prompt"
+prompt = "Use /skill:sharpen {{args}}"
