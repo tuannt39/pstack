@@ -1,0 +1,86 @@
+# Sample omp configuration optimized for pstack (poteto-mode)
+# Copy to ~/.omp/agent/config.yml (global) or .omp/config.yml (project-local)
+
+# 1. Multi-Model Role Routing
+modelRoles:
+  # [builder] Everyday coding, bug fixes, refactorings
+  default: "anthropic/claude-sonnet-4-6:high"
+
+  # [worker] Fast exploration, simple scripts, swarm slice workers
+  smol: "google/gemini-3.5-flash-lite"
+
+  # [judge] Deepest reasoning: /architect, root-cause forensics, eval judge
+  slow: "anthropic/claude-opus-4-7:max"
+
+  # [planner] Plan mode and multi-phase playbook decomposition
+  plan: "anthropic/claude-opus-4-7:high"
+
+  # [peer / watchdog] Real-time streaming monitor watching main agent turns
+  advisor: "xai/grok-4.6:high"
+
+  # Visual parity inspection
+  vision: "google/gemini-3.8-flash"
+
+  # Conventional commit messages
+  commit: "google/gemini-3.5-flash-lite"
+
+# 2. Path-Scoped Model Overrides
+pathModelOverrides:
+  "**/src/test/**": "pi/smol"
+  "**/*.spec.ts": "pi/smol"
+  "**/docs/**": "pi/smol"
+  "**/domain/payment/**": "pi/slow"
+  "**/db/migration/**": "pi/slow"
+
+# 3. Automatic Fallback Chains (Failover on 429/5xx)
+retry:
+  fallbackChains:
+    default:
+      - "xai/grok-4.6:high"
+      - "openai-codex/gpt-5.5:high"
+    slow:
+      - "openai-codex/gpt-5.5:max"
+      - "xai/grok-4.6:high"
+    smol:
+      - "anthropic/claude-haiku-5.5"
+
+# 4. Context Window & Truncation Controls
+context:
+  toolResultMaxChars: 4000
+  truncateHeadRatio: 0.6
+
+# 5. Concurrency & Subagent Controls
+task:
+  maxConcurrency: 8
+
+# 6. Time-Traveling Stream Rules (TTSR)
+ttsr:
+  enabled: true
+  rules:
+    - id: "ban-react-use-effect"
+      pattern: "\\buseEffect\\s*\\("
+      reminder: |
+        [TTSR INTERCEPT - principle-minimize-reader-load]:
+        Direct useEffect is banned in feature components.
+        Remediation: (1) Compute derived state during render; (2) Move side effects to event handlers; (3) Use dedicated hooks from 'src/shared/hooks/'.
+
+    - id: "ban-playwright-hard-sleep"
+      pattern: "\\.waitForTimeout\\s*\\("
+      reminder: |
+        [TTSR INTERCEPT - principle-prove-it-works]:
+        page.waitForTimeout() hard sleep is banned in E2E tests.
+        Remediation: Await an observable DOM or network state, e.g. await expect(page.getByTestId('...')).toBeVisible().
+
+    - id: "ban-typescript-any-escape"
+      pattern: "\\bas\\s+(any|unknown)\\b|:\\s*any\\b"
+      reminder: |
+        [TTSR INTERCEPT - principle-type-system-discipline]:
+        Casting to 'any' or using ': any' is banned.
+        Remediation: Define an explicit type or parse external data with a Zod schema at the system boundary.
+
+    - id: "ban-java-field-injection-and-raw-date"
+      pattern: "@Autowired\\s+private|new\\s+Date\\s*\\(|LocalDateTime\\.now\\s*\\("
+      reminder: |
+        [TTSR INTERCEPT - Backend Architecture Rule]:
+        (1) Ban '@Autowired private' on fields -> Use constructor injection or Lombok @RequiredArgsConstructor on final fields.
+        (2) Ban 'java.util.Date' and 'LocalDateTime.now()' without timezone -> Use 'java.time.Instant.now(clock)'.

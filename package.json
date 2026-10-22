@@ -1,0 +1,29 @@
+{
+  "name": "pstack",
+  "version": "0.15.30",
+  "description": "Rigorous agent workflows you can parallelize with confidence — standalone native plugin for omp (oh-my-pi)",
+  "type": "module",
+  "homepage": "https://github.com/tuannt39/pstack",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tuannt39/pstack.git"
+  },
+  "keywords": [
+    "pi-package",
+    "skills",
+    "pstack",
+    "poteto-mode",
+    "workflow",
+    "principles",
+    "subagents",
+    "unslop"
+  ],
+  "pi": {
+    "extensions": [
+      "./.pi/extensions/pstack.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  }
+}
