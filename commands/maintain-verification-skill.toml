@@ -1,0 +1,2 @@
+description = "Audit and update verification skill and feature map"
+prompt = "Use /skill:maintain-verification-skill {{args}}"

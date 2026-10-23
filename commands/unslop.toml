@@ -1,0 +1,2 @@
+description = "Cut AI tells and tighten prose"
+prompt = "Use /skill:unslop {{args}}"

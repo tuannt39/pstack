@@ -1,0 +1,2 @@
+description = "Adversarial multi-model code review from independent angles"
+prompt = "Use /skill:interrogate {{args}}"

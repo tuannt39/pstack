@@ -1,43 +1,19 @@
-# pstack
+# pstack for omp (oh-my-pi) & Google Antigravity (agy)
 
 > **"If you want to go fast, go deep first."**  
-> Rigorous AI agent workflows you can parallelize with confidence — standalone native plugin for **Google Antigravity (`agy`)** and **omp (oh-my-pi)**.
+> Rigorous AI agent workflows you can parallelize with confidence — standalone native plugin for [omp (oh-my-pi)](https://omp.sh/) and **Google Antigravity (`agy`)**.
 
 `pstack` is the engineering methodology and toolset created by **Lauren Tan** ([@poteto](https://x.com/poteto) — former React Core at Meta, Netflix Engineering Manager, Cursor, and Grok Bot lead at SpaceX / xAI). It bridges the gap between quick "vibe coding" and enterprise-grade software delivery, enabling over **2,000 pull requests per month** with high quality, rigorous verification, and zero code slop.
 
-This repository (`https://github.com/tuannt39/pstack`) provides the standalone, native plugin distribution of `pstack` for modern AI coding harnesses.
+This repository (`https://github.com/tuannt39/pstack`) provides the standalone, native plugin distribution of `pstack` specifically optimized for **omp** (`oh-my-pi`) and **Google Antigravity** (`agy`).
 
 ---
 
 ## 1. Installation
 
-### Google Antigravity (`agy`)
+### 1.1 omp (oh-my-pi)
 
-Install `pstack` as a native plugin into Antigravity with a single command:
-
-```bash
-# Install directly from GitHub
-agy plugin install https://github.com/tuannt39/pstack
-
-# Or install from a local checkout for development
-agy plugin install ./pstack
-```
-
-Verify your installation:
-```bash
-agy plugin list
-agy plugin validate ./pstack --strict
-```
-
-Once installed:
-- All 57 skills are automatically discovered and invocable via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
-- Both subagents (`poteto-agent` and `comment-sicko`) are registered.
-- `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and Antigravity tool mappings into every session.
-- Full guide: [`docs/harness/antigravity.md`](docs/harness/antigravity.md).
-
-### omp (oh-my-pi)
-
-Install `pstack` into `omp`:
+Install pstack into `omp` with a single command:
 
 ```bash
 # Install directly from GitHub
@@ -54,9 +30,33 @@ omp plugin doctor
 ```
 
 Once installed:
-- All skills are mounted via `resources_discover`.
-- `poteto-mode` and the 24 engineering principles are injected upon session start and post-compaction.
+- All 30+ skills are automatically discovered and available via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
+- `poteto-mode` and the 24 engineering principles are automatically injected upon session start and post-compaction.
 - Full guide: [`docs/harness/omp.md`](docs/harness/omp.md).
+
+### 1.2 Google Antigravity (agy)
+
+Install `pstack` as a native plugin into Antigravity with a single command:
+
+```bash
+# Install directly from GitHub
+agy plugin install https://github.com/tuannt39/pstack
+
+# Or install from a local checkout for development
+agy plugin install ./pstack
+```
+
+Verify your installation:
+```bash
+agy plugin list
+agy plugin validate ./pstack
+```
+
+Once installed:
+- All 57 skills are automatically discovered and invocable via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
+- Both subagents (`poteto-agent` and `comment-sicko`) are registered.
+- `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and Antigravity tool mappings into every session.
+- Full guide: [`docs/harness/antigravity.md`](docs/harness/antigravity.md).
 
 ---
 
@@ -84,7 +84,21 @@ Based on the technical deep-dive in `Phân Tích Kỹ Thuật AI Agent.pdf`:
 
 ---
 
-## 3. Quickstart
+## 3. Why omp is the Ultimate Runtime for pstack
+
+| Feature | Why it matters for pstack |
+| --- | --- |
+| **Time-Traveling Stream Rules (TTSR)** | Intercepts forbidden patterns (`useEffect`, `waitForTimeout`, `as any`) mid-stream at the token level, aborting and injecting remediation hints instantly. |
+| **Real-Time Advisor Role** | A second, independent model watches every turn of the main agent to prevent shortcuts. |
+| **Hashline Edit Format** | Line content hashes (`[file.ts#A1B2]`) prevent misapplied diffs and save 61% output tokens. |
+| **Native In-Process Tools** | Rust brush shell (58 coreutils), PCRE2 `grep`, `glob`, `read` with slice selectors. |
+| **DAP Debugger Protocol (`debug`)** | Direct breakpoints, stack frames, and memory inspection without guessing. |
+| **Loopback Eval Kernel (`eval`)** | Python / Bun workers can call back into agent tools (`await tool.read()`) to filter profiling traces before filling context. |
+| **Native Worktree Concurrency (`task`)** | Runs parallel subagents (`/arena`, `/swarm`) in isolated Git Worktrees with schema validation. |
+
+---
+
+## 4. Quickstart
 
 Start any non-trivial task by invoking `/poteto-mode`:
 
@@ -106,15 +120,27 @@ Start any non-trivial task by invoking `/poteto-mode`:
 
 ---
 
-## 4. Harness Guides
+## 5. Multi-Model Role Routing (`~/.omp/agent/config.yml`)
 
-- **Google Antigravity (`agy`)**: [`docs/harness/antigravity.md`](docs/harness/antigravity.md)
-- **omp (`oh-my-pi`)**: [`docs/harness/omp.md`](docs/harness/omp.md)
-- **Claude Code**: [`docs/harness/claude-code.md`](docs/harness/claude-code.md)
+Configure your model roles to maximize cost-efficiency and reasoning depth:
+
+```yaml
+# ~/.omp/agent/config.yml
+modelRoles:
+  default: "anthropic/claude-sonnet-4-6:high"   # builder: daily code implementation
+  smol: "google/gemini-3.5-flash-lite"          # worker: fast exploration, swarm workers
+  slow: "anthropic/claude-opus-4-7:max"          # judge: architecture (/architect) & eval
+  plan: "anthropic/claude-opus-4-7:high"         # planner: task planning
+  advisor: "xai/grok-4.6:high"                  # peer / watchdog: real-time streaming monitor
+  vision: "google/gemini-3.8-flash"             # visual parity checking
+  commit: "google/gemini-3.5-flash-lite"        # conventional commits
+```
+
+See `templates/omp/config.sample.yml` for the complete template with TTSR rules.
 
 ---
 
-## 5. Enterprise Blueprints & Operational Tooling
+## 6. Enterprise Blueprints & Operational Tooling
 
 For production multi-agent deployment, explore the guides in `docs/enterprise/`:
 - [`01-verification-and-feature-map.md`](./docs/enterprise/01-verification-and-feature-map.md): 6-part Verification Skill & Feature Map.
@@ -129,8 +155,13 @@ Ready-to-use scripts live in `bin/`:
 - `bin/spawn-agent-slot.sh`
 - `bin/audit-decisions.sh`
 
+### Harness Guides
+- **omp (`oh-my-pi`)**: [`docs/harness/omp.md`](docs/harness/omp.md)
+- **Google Antigravity (`agy`)**: [`docs/harness/antigravity.md`](docs/harness/antigravity.md)
+- **Claude Code**: [`docs/harness/claude-code.md`](docs/harness/claude-code.md)
+
 ---
 
-## 6. License
+## 7. License
 
 MIT

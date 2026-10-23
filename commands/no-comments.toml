@@ -1,0 +1,2 @@
+description = "Strip AI narrating comments before review"
+prompt = "Use /skill:no-comments {{args}}"

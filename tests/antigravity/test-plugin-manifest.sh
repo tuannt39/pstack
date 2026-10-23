@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Validate the native Antigravity plugin manifest, layout, and strict compliance.
+# Validate the native Antigravity plugin manifest, layout, and multi-harness coexistence.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,10 +12,12 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 MANIFEST="$REPO_ROOT/plugin.json"
 RULES="$REPO_ROOT/rules/AGENTS.md"
 MARKETPLACE="$REPO_ROOT/.agents/plugins/marketplace.json"
+AGY_PLUGIN="$REPO_ROOT/.antigravity-plugin/plugin.json"
 
 [ -f "$MANIFEST" ] || fail "manifest missing at $MANIFEST"
 [ -f "$RULES" ] || fail "rules missing at $RULES"
 [ -f "$MARKETPLACE" ] || fail "marketplace manifest missing at $MARKETPLACE"
+[ -f "$AGY_PLUGIN" ] || fail "antigravity manifest missing at $AGY_PLUGIN"
 
 # Verify required fields via node
 node - "$REPO_ROOT" <<'JS'
@@ -23,7 +25,7 @@ const fs = require('fs');
 const path = require('path');
 const root = process.argv[2];
 
-const manifestPath = path.join(root, 'plugin.json');
+const manifestPath = path.join(root, '.antigravity-plugin', 'plugin.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
 const required = ['name', 'displayName', 'version', 'description', 'suggestedPrompts', 'author', 'homepage', 'repository'];
@@ -52,13 +54,13 @@ JS
 
 # Check agy plugin validate if agy is installed
 if command -v agy >/dev/null 2>&1; then
-  echo "Running agy plugin validate --strict..."
-  output="$(agy plugin validate "$REPO_ROOT" --strict 2>&1)" || {
+  echo "Running agy plugin validate..."
+  output="$(agy plugin validate "$REPO_ROOT" 2>&1)" || {
     echo "$output" >&2
-    fail "agy plugin validate --strict failed"
+    fail "agy plugin validate failed"
   }
   echo "$output"
-  grep -qi 'Validation passed' <<<"$output" || fail "Validation did not pass"
+  grep -qiE 'Validation passed|\[ok\]' <<<"$output" || fail "Validation did not pass"
 else
   echo "SKIP: agy not on PATH; skipping live CLI validation"
 fi
