@@ -1,13 +1,18 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "pstack",
+  "displayName": "pstack (Poteto Mode)",
   "version": "0.15.30",
-  "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.",
+  "description": "Rigorous agent workflows you can parallelize with confidence — 23 playbooks, 24 principles, and deliberate subagents.",
+  "suggestedPrompts": [
+    "/poteto-mode Investigate how this subsystem works and trace the runtime flow",
+    "/poteto-mode Reproduce this bug first, then fix the root cause and verify"
+  ],
   "author": {
     "name": "Lauren Tan"
   },
-  "homepage": "https://github.com/cursor/plugins/tree/main/pstack",
-  "repository": "https://github.com/cursor/plugins",
+  "homepage": "https://github.com/tuannt39/pstack",
+  "repository": "https://github.com/tuannt39/pstack",
   "license": "MIT",
   "keywords": [
     "pstack",

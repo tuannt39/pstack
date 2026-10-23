@@ -144,3 +144,12 @@ A large or cross-cutting effort (a migration across many call sites, an ambitiou
 - **Multi-phase or multi-PR plan.** Work that spans phases or stacked PRs. File: `playbooks/multi-phase-plan.md`.
 - **Worktree and simulator cleanup.** Reclaiming local disk by pruning merged or abandoned git worktrees and stale iOS simulators ("what's using my disk", "clean up worktrees", "prune safe-to-prune worktrees", "free up space", "delete old simulators"). File: `playbooks/worktree-cleanup.md`.
 - **Opening a PR.** Invoked at the end of every other playbook.
+
+
+## Platform Adaptation
+
+Skills speak in generic actions and Cursor conventions ("dispatch a subagent", "open a todolist", "Task", "AskQuestion"). For harness-specific tool equivalents and instructions-file conventions, consult:
+
+- **Antigravity (`agy`)**: [references/antigravity-tools.md](references/antigravity-tools.md) and [docs/harness/antigravity.md](../../docs/harness/antigravity.md)
+- **omp (`oh-my-pi`)**: [docs/harness/omp.md](../../docs/harness/omp.md)
+- **Claude Code**: [docs/harness/claude-code.md](../../docs/harness/claude-code.md)

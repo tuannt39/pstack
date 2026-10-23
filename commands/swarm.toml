@@ -1,2 +1,0 @@
-description = "Fan out N parallel workers across slices, gauntlets, or races"
-prompt = "Use /skill:swarm {{args}}"

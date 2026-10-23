@@ -159,3 +159,10 @@ For a run that drifts, [`references/prompting.md`](references/prompting.md) has 
 ## Reply
 
 Lead with the answer. Give at most one example prompt in a code block, adapted from [`references/recipes.md`](references/recipes.md) when one fits, then the link to that file. Keep it short unless the user asked for the whole map.
+
+
+## Harness Guides
+
+- **Google Antigravity (`agy`)**: [docs/harness/antigravity.md](../../docs/harness/antigravity.md) (`agy plugin install https://github.com/tuannt39/pstack`)
+- **omp (`oh-my-pi`)**: [docs/harness/omp.md](../../docs/harness/omp.md) (`omp plugin install git:github.com/tuannt39/pstack`)
+- **Claude Code**: [docs/harness/claude-code.md](../../docs/harness/claude-code.md)

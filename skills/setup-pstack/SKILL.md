@@ -76,3 +76,10 @@ Check whether the project has a way to drive the real app for proof (a `verify-*
 ### 8. Offer a formal verification skill (optional)
 
 Check whether the project already has a formal verification skill (a project skill that runs a model checker, a proof, or another verifier against the code). If not, offer once: "want a formal verification skill, so agents can prove a key property of your code holds in every case in scope, not only the cases tests reach? I can generate one with /create-formal-verification-skill." On yes, invoke `/create-formal-verification-skill` (resolves wherever pstack is installed: workspace, user, or plugin). On no, move on without pushing.
+
+
+## Platform Differences
+
+- **Antigravity (`agy`)**: Write `~/.gemini/config/rules/pstack-models.md` without frontmatter using Antigravity's model options (`pro`, `flash`, `flash_lite`, `inherit`). See [docs/harness/antigravity.md](../../docs/harness/antigravity.md).
+- **Claude Code**: Write `~/.claude/rules/pstack-models.md`. See [docs/harness/claude-code.md](../../docs/harness/claude-code.md).
+- **omp (`oh-my-pi`)**: Configure `modelRoles` in `~/.omp/agent/config.yml`. See [docs/harness/omp.md](../../docs/harness/omp.md).

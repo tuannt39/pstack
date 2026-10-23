@@ -1,2 +1,0 @@
-description = "Guide to pstack setup, playbooks, skills, and principles"
-prompt = "Use /skill:poteto-help {{args}}"

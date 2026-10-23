@@ -1,2 +1,0 @@
-description = "Settle caller usage, types, and module shape before code"
-prompt = "Use /skill:architect {{args}}"

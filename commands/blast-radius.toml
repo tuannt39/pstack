@@ -1,2 +1,0 @@
-description = "Find what a change could break with runtime proof"
-prompt = "Use /skill:blast-radius {{args}}"
