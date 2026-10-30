@@ -1,0 +1,2 @@
+description = "Generate a formal verification skill and TLA+ or model-check harness"
+prompt = "Use /skill:create-formal-verification-skill {{args}}"

@@ -30,7 +30,7 @@ omp plugin doctor
 ```
 
 Once installed:
-- All 30+ skills are automatically discovered and available via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
+- All 58 skills are automatically discovered and available via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
 - `poteto-mode` and the 24 engineering principles are automatically injected upon session start and post-compaction.
 - Full guide: [`docs/harness/omp.md`](docs/harness/omp.md).
 
@@ -53,7 +53,7 @@ agy plugin validate ./pstack
 ```
 
 Once installed:
-- All 57 skills are automatically discovered and invocable via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
+- All 58 skills are automatically discovered and invocable via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
 - Both subagents (`poteto-agent` and `comment-sicko`) are registered.
 - `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and Antigravity tool mappings into every session.
 - Full guide: [`docs/harness/antigravity.md`](docs/harness/antigravity.md).

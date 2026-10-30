@@ -1,6 +1,6 @@
 # pstack in omp (oh-my-pi)
 
-pstack skills run natively inside **omp** (`oh-my-pi`). By packaging pstack with native extension hooks (`package.json` and `.pi/extensions/pstack.ts`), all 30+ skills, playbooks, and 24 engineering principles are auto-discovered and loaded with zero manual copying.
+pstack skills run natively inside **omp** (`oh-my-pi`). By packaging pstack with native extension hooks (`package.json` and `.pi/extensions/pstack.ts`), all 58 skills, playbooks, and 24 engineering principles are auto-discovered and loaded with zero manual copying.
 
 ## 1. Installation
 
@@ -11,7 +11,7 @@ Install pstack into your omp installation directly from GitHub:
 omp plugin install git:github.com/tuannt39/pstack
 
 # Or install from a local repository checkout
-omp plugin link D:\tuannt21\git\me\me\pstack
+omp plugin link ./pstack
 ```
 
 Once installed:

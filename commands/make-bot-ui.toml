@@ -1,0 +1,2 @@
+description = "Build a custom UI page whose buttons wake a Grok Bot via webhook"
+prompt = "Use /skill:make-bot-ui {{args}}"

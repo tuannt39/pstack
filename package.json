@@ -1,6 +1,6 @@
 {
   "name": "pstack",
-  "version": "0.15.30",
+  "version": "0.15.36",
   "description": "Rigorous agent workflows you can parallelize with confidence — standalone native plugin for omp (oh-my-pi)",
   "type": "module",
   "homepage": "https://github.com/tuannt39/pstack",

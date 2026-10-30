@@ -47,6 +47,8 @@ Present the synthesizer's full Accepted / Rejected / Backlog output and wait for
 
 File each Backlog item to your team's devex or backlog tracker without waiting. Only the Accepted list waits for approval.
 
+Never edit a skill under `plugins/cache/`. Before approval, show its destination, `.cursor/skills/<skill>/` or `~/.cursor/skills/<skill>/`. After approval, copy the skill folder there and edit the copy. Never open a PR or push.
+
 Follow each approved row's Routing exactly:
 
 - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): the parent does it directly.
@@ -64,3 +66,10 @@ Short list, no preamble:
 - New skills created: `<skill path>`. One line each (rare).
 - Backlog filed to the devex tracker: `<issue title>` (`<tags>`). One line each.
 - Dropped: one line per rejected finding + reason from the synthesizer.
+
+
+## Platform Destinations
+
+- **omp (`oh-my-pi`)**: Copy the skill folder to `~/.omp/agent/skills/<skill>/` or project-local `.omp/skills/<skill>/`.
+- **Google Antigravity (`agy`)**: Copy the skill folder to `~/.gemini/config/skills/<skill>/` or project-local `.agents/skills/<skill>/`.
+- **Cursor**: Copy to `.cursor/skills/<skill>/` or `~/.cursor/skills/<skill>/`.

@@ -1,6 +1,6 @@
 # pstack in Google Antigravity (`agy`)
 
-pstack skills, 23 playbooks, and 24 engineering principles run natively inside **Google Antigravity (`agy`)** as a native plugin. All 57 skills and 2 subagents are auto-discovered, and `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and tool mappings upon session start.
+pstack skills, 23 playbooks, and 24 engineering principles run natively inside **Google Antigravity (`agy`)** as a native plugin. All 58 skills and 2 subagents are auto-discovered, and `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and tool mappings upon session start.
 
 ---
 
@@ -13,17 +13,17 @@ Install pstack into your Antigravity environment with a single command:
 agy plugin install https://github.com/tuannt39/pstack
 
 # Or install from a local checkout for development
-agy plugin install D:\tuannt21\git\me\me\pstack
+agy plugin install ./pstack
 ```
 
 Verify your installation:
 ```bash
 agy plugin list
-agy plugin validate D:\tuannt21\git\me\me\pstack --strict
+agy plugin validate ./pstack
 ```
 
 Once installed:
-- All 57 skills are auto-discovered and available via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
+- All 58 skills are auto-discovered and available via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
 - Both subagents (`poteto-agent` and `comment-sicko`) are registered and discoverable.
 - `rules/AGENTS.md` is active in every session while the plugin is enabled (`agy plugin enable pstack`).
 

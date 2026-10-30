@@ -1,0 +1,2 @@
+description = "Turn working habits and transcripts into a personal mode skill"
+prompt = "Use /skill:automate-me {{args}}"

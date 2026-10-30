@@ -1,0 +1,2 @@
+description = "Catch up on this chat since your last message with decidable calls"
+prompt = "Use /skill:ketchup {{args}}"

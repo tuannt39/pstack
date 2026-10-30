@@ -1,0 +1,2 @@
+description = "Apply TypeScript type-safety and boundary rules to .ts and .tsx code"
+prompt = "Use /skill:typescript-best-practices {{args}}"

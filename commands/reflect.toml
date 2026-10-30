@@ -1,0 +1,2 @@
+description = "Review transcripts in parallel and propose high-leverage skill edits"
+prompt = "Use /skill:reflect {{args}}"

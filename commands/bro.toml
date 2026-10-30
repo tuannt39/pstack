@@ -1,0 +1,2 @@
+description = "Restate the last reply in plain words without jargon"
+prompt = "Use /skill:bro {{args}}"

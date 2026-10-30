@@ -1,0 +1,2 @@
+description = "Design and run a bespoke rigorous playbook for large cross-cutting work"
+prompt = "Use /skill:figure-it-out {{args}}"

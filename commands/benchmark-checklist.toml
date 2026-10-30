@@ -1,0 +1,2 @@
+description = "Vet a performance benchmark or speedup before reporting it"
+prompt = "Use /skill:benchmark-checklist {{args}}"

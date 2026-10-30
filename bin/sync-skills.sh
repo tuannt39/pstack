@@ -18,11 +18,20 @@ case "$ACTION" in
       if [[ -d "$skill" && -f "$skill/SKILL.md" ]]; then
         name="$(basename "$skill")"
         dest="$TARGET_DIR/$name"
-        if [[ ! -e "$dest" ]]; then
-          cp -r "$skill" "$dest" 2>/dev/null || ln -s "$skill" "$dest" 2>/dev/null || true
+        # Preserve user real directory overrides
+        if [[ -d "$dest" && ! -L "$dest" ]]; then
           COUNT=$((COUNT + 1))
+          continue
         fi
-      fi
+        # Skip if already a valid symlink to this skill
+        if [[ -L "$dest" ]] && [[ "$(readlink -f "$dest" 2>/dev/null || true)" == "$(readlink -f "$skill" 2>/dev/null || echo "$skill")" ]]; then
+          COUNT=$((COUNT + 1))
+          continue
+        fi
+        rm -f "$dest"
+        ln -s "$skill" "$dest" 2>/dev/null || cp -r "$skill" "$dest"
+        COUNT=$((COUNT + 1))
+        fi
     done
     echo "[OK] Synced $COUNT skills to $TARGET_DIR."
     ;;
@@ -32,7 +41,7 @@ case "$ACTION" in
     for skill in "$SKILLS_SRC"/*; do
       name="$(basename "$skill")"
       dest="$TARGET_DIR/$name"
-      if [[ -e "$dest" ]]; then
+      if [[ -e "$dest" || -L "$dest" ]]; then
         rm -rf "$dest"
         COUNT=$((COUNT + 1))
       fi

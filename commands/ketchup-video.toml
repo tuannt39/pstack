@@ -1,0 +1,2 @@
+description = "Catch up like /ketchup with a short subtitled slide video"
+prompt = "Use /skill:ketchup-video {{args}}"

@@ -1,0 +1,2 @@
+description = "Stop agents from repeating the same mistake in this repository"
+prompt = "Use /skill:correct {{args}}"

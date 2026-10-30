@@ -1,0 +1,2 @@
+description = "Write or review docs, RFCs, READMEs, PRs, and commits to a standard"
+prompt = "Use /skill:technical-writing {{args}}"

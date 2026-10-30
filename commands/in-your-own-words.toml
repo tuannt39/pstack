@@ -1,0 +1,2 @@
+description = "Restate the user goal, problem, and smallest expected change"
+prompt = "Use /skill:in-your-own-words {{args}}"

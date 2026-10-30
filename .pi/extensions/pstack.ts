@@ -1,4 +1,14 @@
-import { readFileSync, existsSync, mkdirSync, symlinkSync, cpSync, readdirSync } from "node:fs";
+import {
+	readFileSync,
+	existsSync,
+	mkdirSync,
+	symlinkSync,
+	cpSync,
+	readdirSync,
+	lstatSync,
+	realpathSync,
+	rmSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +20,7 @@ const extensionDir = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(extensionDir, "../..");
 const skillsDir = resolve(packageRoot, "skills");
 const bootstrapSkillPath = resolve(skillsDir, "poteto-mode", "SKILL.md");
+const commandsDir = resolve(packageRoot, "commands");
 
 let cachedBootstrap: string | null | undefined;
 
@@ -62,7 +73,8 @@ interface ExtensionAPI {
 	sendUserMessage(message: string, options?: { expandPromptTemplates?: boolean; deliverAs?: "followUp" }): void;
 }
 
-function syncSkillsToUserAgentDir(sourceSkillsDir: string): void {
+function syncSkillsToUserAgentDir(sourceSkillsDir: string): number {
+	let activeCount = 0;
 	try {
 		const userSkillsDir = resolve(homedir(), ".omp", "agent", "skills");
 		if (!existsSync(userSkillsDir)) {
@@ -70,26 +82,78 @@ function syncSkillsToUserAgentDir(sourceSkillsDir: string): void {
 		}
 		const skillFolders = readdirSync(sourceSkillsDir);
 		for (const skill of skillFolders) {
-			const targetPath = resolve(userSkillsDir, skill);
 			const sourcePath = resolve(sourceSkillsDir, skill);
-			if (!existsSync(targetPath)) {
+			if (!existsSync(resolve(sourcePath, "SKILL.md"))) continue;
+			activeCount += 1;
+
+			const targetPath = resolve(userSkillsDir, skill);
+			try {
+				const targetStat = lstatSync(targetPath);
+				// If target exists and is a real directory (not a symlink), preserve user edits
+				if (!targetStat.isSymbolicLink()) {
+					continue;
+				}
+				// If target is a symlink pointing to the current source, it is already synced
+				if (existsSync(targetPath) && realpathSync(targetPath) === realpathSync(sourcePath)) {
+					continue;
+				}
+				// Remove stale or broken symlink
+				rmSync(targetPath, { force: true });
+			} catch {
+				// Target does not exist, proceed to link
+			}
+
+			try {
+				symlinkSync(sourcePath, targetPath, "junction");
+			} catch {
 				try {
-					symlinkSync(sourcePath, targetPath, "junction");
-				} catch {
 					cpSync(sourcePath, targetPath, { recursive: true });
+				} catch {
+					// Silent fallback
 				}
 			}
 		}
+		return activeCount;
 	} catch {
-		// Silent fallback if filesystem permissions restrict access
+		try {
+			return readdirSync(sourceSkillsDir).filter((s) => existsSync(resolve(sourceSkillsDir, s, "SKILL.md"))).length;
+		} catch {
+			return activeCount;
+		}
 	}
+}
+
+function loadCommands(commandsPath: string): Array<{ name: string; description: string }> {
+	const result: Array<{ name: string; description: string }> = [];
+	try {
+		if (!existsSync(commandsPath)) return result;
+		const files = readdirSync(commandsPath).sort();
+		for (const file of files) {
+			if (!file.endsWith(".toml")) continue;
+			const name = file.slice(0, -5);
+			let description = `Invoke /skill:${name}`;
+			try {
+				const content = readFileSync(resolve(commandsPath, file), "utf8");
+				const match = content.match(/^description\s*=\s*"([^"]+)"/m);
+				if (match && match[1]) {
+					description = match[1];
+				}
+			} catch {
+				// Use fallback description
+			}
+			result.push({ name, description });
+		}
+	} catch {
+		// Silent fallback
+	}
+	return result;
 }
 
 export default function pstackPiExtension(pi: ExtensionAPI): void {
 	let injectBootstrap = true;
 
 	// Automatically ensure skills are present in ~/.omp/agent/skills/ for prompt <skills> inclusion
-	syncSkillsToUserAgentDir(skillsDir);
+	const activeSkillCount = syncSkillsToUserAgentDir(skillsDir);
 
 	pi.on("resources_discover", async () => ({
 		skillPaths: [skillsDir],
@@ -97,7 +161,7 @@ export default function pstackPiExtension(pi: ExtensionAPI): void {
 
 	pi.on("session_start", async (_event?: unknown, ctx?: CommandContext) => {
 		injectBootstrap = true;
-		ctx?.ui?.notify?.("pstack (poteto-mode) loaded: 57 skills active", "info");
+		ctx?.ui?.notify?.(`pstack (poteto-mode) loaded: ${activeSkillCount} skills active`, "info");
 	});
 
 	pi.on("session_switch", async (_event?: unknown, ctx?: CommandContext) => {
@@ -153,29 +217,8 @@ export default function pstackPiExtension(pi: ExtensionAPI): void {
 		pi.sendUserMessage(prompt, { expandPromptTemplates: true });
 	};
 
-	// Register core slash commands
-	const commandsToRegister: Array<{ name: string; description: string }> = [
-		{ name: "poteto-mode", description: "Default entry point for rigorous engineering work (23 playbooks)" },
-		{ name: "poteto-help", description: "Guide to pstack setup, playbooks, skills, and principles" },
-		{ name: "how", description: "Walkthrough of how a subsystem works and runtime flow" },
-		{ name: "why", description: "Archaeology across git log, issues, docs for rationale" },
-		{ name: "architect", description: "Settle caller usage, types, and module shape before code" },
-		{ name: "arena", description: "Spawn N parallel candidates at same task, pick base, graft ideas" },
-		{ name: "swarm", description: "Fan out N parallel workers across slices, gauntlets, or races" },
-		{ name: "interrogate", description: "Adversarial multi-model code review from independent angles" },
-		{ name: "tdd", description: "Test-driven development: failing test first, then fix" },
-		{ name: "unslop", description: "Cut AI tells and tighten prose" },
-		{ name: "no-comments", description: "Strip AI narrating comments before review" },
-		{ name: "show-me-your-work", description: "Keep auditable decision trail in decision-log.tsv" },
-		{ name: "blast-radius", description: "Find what a change could break with runtime proof" },
-		{ name: "teach", description: "Plain explanation of a change or subsystem with diagrams" },
-		{ name: "recall", description: "Reconstruct recent working context on a topic" },
-		{ name: "sharpen", description: "Make a task deeper, not bigger, then rewrite prompt" },
-		{ name: "create-verification-skill", description: "Generate project-local verification skill and feature map" },
-		{ name: "maintain-verification-skill", description: "Audit and update verification skill and feature map" },
-	];
-
-	for (const cmd of commandsToRegister) {
+	const commands = loadCommands(commandsDir);
+	for (const cmd of commands) {
 		pi.registerCommand(cmd.name, {
 			description: cmd.description,
 			handler: (args: string, ctx?: CommandContext) => sendSkillAlias(`/skill:${cmd.name}`, args, ctx),

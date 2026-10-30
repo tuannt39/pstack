@@ -1,0 +1,2 @@
+description = "Configure model roles and reasoning budget for pstack tasks"
+prompt = "Use /skill:setup-pstack {{args}}"

@@ -1,0 +1,2 @@
+description = "Check a TLA+ model with TLC and draw a Mermaid statechart of bug paths"
+prompt = "Use /skill:statechart {{args}}"

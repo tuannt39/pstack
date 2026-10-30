@@ -1,0 +1,2 @@
+description = "Bring a formal verification model and harness back in line with code"
+prompt = "Use /skill:maintain-formal-verification-skill {{args}}"
