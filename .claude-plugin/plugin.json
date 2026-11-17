@@ -1,7 +1,7 @@
 {
   "name": "pstack",
-  "version": "0.15.36",
-  "description": "Rigorous agent workflows you can parallelize with confidence — 23 playbooks, 24 principles, and deliberate subagents.",
+  "version": "0.15.43",
+  "description": "Rigorous agent workflows you can parallelize with confidence — 22 playbooks, 24 principles, and deliberate subagents.",
   "author": {
     "name": "Lauren Tan"
   },

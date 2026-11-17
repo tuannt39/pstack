@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "pstack",
-  "description": "Rigorous agent workflows you can parallelize with confidence — 23 playbooks, 24 principles, and deliberate subagents.",
+  "description": "Rigorous agent workflows you can parallelize with confidence — 22 playbooks, 24 principles, and deliberate subagents.",
   "owner": {
     "name": "Lauren Tan",
     "url": "https://github.com/tuannt39/pstack"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "pstack",
-      "description": "Rigorous agent workflows you can parallelize with confidence — 23 playbooks, 24 principles, and deliberate subagents.",
+      "description": "Rigorous agent workflows you can parallelize with confidence — 22 playbooks, 24 principles, and deliberate subagents.",
       "source": "./",
       "category": "productivity"
     }

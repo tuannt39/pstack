@@ -1,2 +1,2 @@
-description = "Settle caller usage, types, and module shape before code"
+description = "Trace touched systems, sketch two shapes, and settle boundaries before code"
 prompt = "Use /skill:architect {{args}}"

@@ -1,6 +1,6 @@
 # pstack in Google Antigravity (`agy`)
 
-pstack skills, 23 playbooks, and 24 engineering principles run natively inside **Google Antigravity (`agy`)** as a native plugin. All 58 skills and 2 subagents are auto-discovered, and `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and tool mappings upon session start.
+pstack skills, 22 playbooks, and 24 engineering principles run natively inside **Google Antigravity (`agy`)** as a native plugin. All 58 skills and 2 subagents are auto-discovered, and `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and tool mappings upon session start.
 
 ---
 
@@ -36,7 +36,7 @@ Antigravity provides rich native tool interfaces for AI pair programming:
 | Cursor / Generic Concept | Antigravity Native Tool | Description & Advantage |
 | :--- | :--- | :--- |
 | `Task` / Subagents | `invoke_subagent` | Spawns background subagents (`TypeName: "self"` for code delegates, `TypeName: "research"` for read-only). Automatically awakens parent on completion (Reactive Wakeup). |
-| Worktree Concurrency | `Workspace: "branch"` or `"share"` | Spins up isolated Git workspaces per subagent for `/arena`, `/swarm`, and `/architect`. |
+| Worktree Concurrency | `Workspace: "branch"` or `"share"` | Spins up isolated Git workspaces per subagent for `/arena` and `/swarm`. |
 | Subagent Follow-up | `send_message` | Allows messaging running subagents via their `conversationId`. |
 | `AskQuestion` | `ask_question` | Interactive multi-choice questions with options and multi-select support. |
 | Open a todolist | Task Artifact (`write_file` / `edit_file`) | Saves and updates markdown checklist artifacts in `<appDataDir>/brain/<conversation-id>/task.md`. (Do not use `manage_task`, which manages OS processes). |
@@ -49,7 +49,7 @@ Antigravity provides rich native tool interfaces for AI pair programming:
 
 ## 3. Subagent Delegation
 
-When running fan-out playbooks (`/arena`, `/swarm`, `/architect`):
+When running fan-out playbooks (`/arena`, `/swarm`):
 
 ```json
 {
@@ -63,6 +63,7 @@ When running fan-out playbooks (`/arena`, `/swarm`, `/architect`):
 
 - **Reactive Wakeup**: Parent does not poll in a loop; execution resumes automatically when subagents finish.
 - **Isolated Branching**: Each subagent gets its own branch workspace when `Workspace: "branch"` is specified, preventing file conflicts during parallel code generation.
+- **Explicit Model & Worker Kickoff**: `agents/poteto-agent.md` omits `model:` because `agy` rejects Cursor model slugs on agent load. Lead every spawned subagent kickoff with `Read <path>/worker.md before anything else.` and pass `Model` explicitly per `~/.gemini/config/rules/pstack-models.md`.
 
 ---
 
@@ -73,20 +74,17 @@ Configure model roles per task difficulty using `/setup-pstack`, which writes `~
 ```markdown
 # pstack model configuration for Antigravity
 # Allowed models: pro, flash, flash_lite, inherit
+# defaults: 3
+# budget: large (xhigh)
 
-feature, refactoring: flash
-bug-fix: flash
-perf-issue: flash
-hillclimb: flash
+feature, refactoring: pro
+bug-fix: pro
+perf-issue: pro
+hillclimb: pro
 judgment and prose: pro
-hardest tasks: pro
-how explorer: flash
-how explainer: pro
-why investigators: flash_lite
-why synthesizer: pro
 arena runners: pro, flash
+arena cross-judge pool: flash, pro
 swarm workers: flash_lite
-architect runners: pro, flash
 interrogate reviewers: pro, flash
 ```
 
@@ -101,12 +99,12 @@ Start any non-trivial engineering task:
 ```
 The agent selects the `Bug fix` playbook, opens a Task Artifact checklist, reproduces with tests, implements the fix surgically, and verifies with runtime proof.
 
-### Workflow B: Parallel Design Exploration (`/architect` & `/arena`)
-Explore competing architecture patterns before touching shared boundaries:
+### Workflow B: Design Exploration (`/architect` & `/arena`)
+Sketch competing architecture shapes or fan out in `/arena` before touching shared boundaries:
 ```text
 /architect design an idempotent webhook consumer for Stripe payments
 ```
-Subagents explore distinct patterns in parallel branch workspaces (`Workspace: "branch"`), synthesize tradeoffs, and present an optimal minimal design.
+For large or contested designs, `/architect` delegates to `/arena` so subagents explore distinct patterns in parallel branch workspaces (`Workspace: "branch"`), synthesize tradeoffs, and converge on a minimal design.
 
 ### Workflow C: Adversarial Code Review (`/interrogate`)
 Before shipping high-risk changes (DB migrations, AuthZ, financial transactions):

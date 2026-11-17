@@ -38,7 +38,7 @@ omp provides native Rust-powered and in-process tools that map directly to pstac
 
 ## 3. Subagent Delegation
 
-When running playbooks that fan out (such as `/arena`, `/swarm`, or `/architect`), omp's `task` tool provides native worktree isolation:
+When running playbooks that fan out (such as `/arena` or `/swarm`), omp's `task` tool provides native worktree isolation:
 
 ```typescript
 // Example: Delegating an arena or swarm slice via omp's task tool

@@ -68,7 +68,7 @@ Based on the technical deep-dive in `Phân Tích Kỹ Thuật AI Agent.pdf`:
    Engineers in the agent era shift from typing code or manually testing screens ("human relays") to designing kitchen stations, recipe playbooks, and verification harnesses that prevent agents from failing.
 2. **Verification Loop & Feature Map:**
    "Done" is not a green build (`BUILD SUCCESSFUL`). "Done" is observable runtime proof. The Feature Map specifies exact DOM/CDP selectors, routes, and preconditions so agents never blindly click.
-3. **23 Playbooks & 24 Principles:**
+3. **22 Playbooks & 24 Principles:**
    Structured recipes for every engineering scenario (`Bug fix`, `Perf`, `Hillclimb`, `Autonomous run`, `Shipping`), anchored by non-negotiable principles like `principle-laziness-protocol` and `principle-boundary-discipline`.
 4. **Dune Architecture & The 5-Tier Control Tower:**
    Hard constraints replacing soft Markdown text:
@@ -110,12 +110,12 @@ Start any non-trivial task by invoking `/poteto-mode`:
 /poteto-mode i'm going to bed. land the stack even if ci flakes. i want everything merged by morning.
 ```
 
-### The 23 Playbooks
+### The 22 Playbooks
 * **Read-only Investigation:** `investigation`, `runtime forensics`, `trace forensics`
 * **Fix & Optimize:** `bug fix`, `perf`, `hillclimb`
 * **Build & Restructure:** `feature`, `refactoring`, `prototype`, `visual parity`, `multi-phase plan`
 * **Review & Merge:** `opening a pr`, `babysit`, `shipping`, `autopilot-full`, `autopilot-stack`
-* **Autonomous Runs:** `autonomous run`, `orchestrate`, `session pickup`, `pause safely`
+* **Autonomous Runs:** `autonomous run`, `session pickup`, `pause safely`
 * **Harness & Meta:** `authoring a skill`, `eval`, `worktree cleanup`
 
 ---

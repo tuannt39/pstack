@@ -32,7 +32,7 @@ Antigravity handles subagents via the native `invoke_subagent` tool:
 
 ### Parallel Worktree Concurrency
 
-For playbooks that fan out across multiple candidates or slices (`/arena`, `/swarm`, `/architect`):
+For playbooks that fan out across multiple candidates or slices (`/arena`, `/swarm`):
 ```json
 {
   "TypeName": "self",
@@ -60,8 +60,8 @@ When a playbook or skill directs you to open a todolist:
 ## 3. Model Configuration
 
 pstack's role-based models map to Antigravity's model options:
-- `claude-opus-5-5-xhigh` or highest reasoning → `Model: "pro"`
-- `grok-4.7-xhigh-fast` or builder default → `Model: "flash"` or `Model: "inherit"`
+- `claude-opus-5-5-xhigh-fast` or `claude-fable-5-2-high` → `Model: "pro"` (or `Model: "inherit"`)
+- `claude-opus-5-5-high-fast` or `gemini-4-carbon-high` → `Model: "flash"` or `Model: "inherit"`
 - Fast worker / swarm explore → `Model: "flash_lite"`
 
-Users can persist model choices globally in `~/.gemini/config/rules/pstack-models.md` using `/setup-pstack`.
+`agents/poteto-agent.md` omits `model:` for `agy` loader compatibility, so pass `Model` explicitly on `invoke_subagent` calls and lead every kickoff with `Read <path>/worker.md before anything else.`. Users can persist model choices globally in `~/.gemini/config/rules/pstack-models.md` using `/setup-pstack`.

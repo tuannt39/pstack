@@ -1,2 +1,2 @@
-description = "Walkthrough of how a subsystem works and runtime flow"
+description = "Walkthrough of how a subsystem works from a read-only pass"
 prompt = "Use /skill:how {{args}}"

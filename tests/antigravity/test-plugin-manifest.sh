@@ -60,7 +60,7 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 const rootManifest = JSON.parse(fs.readFileSync(path.join(root, 'plugin.json'), 'utf8'));
 const claudeManifest = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
 
-const expectedVersion = '0.15.36';
+const expectedVersion = '0.15.43';
 for (const [file, v] of [
   ['.antigravity-plugin/plugin.json', manifest.version],
   ['package.json', pkg.version],
@@ -69,6 +69,22 @@ for (const [file, v] of [
 ]) {
   if (v !== expectedVersion) {
     console.error(`Version mismatch in ${file}: expected '${expectedVersion}', got '${v}'`);
+    process.exit(1);
+  }
+}
+
+for (const rel of [
+  '.antigravity-plugin/plugin.json',
+  '.claude-plugin/plugin.json',
+  '.claude-plugin/marketplace.json',
+  'plugin.json',
+  'commands/poteto-mode.toml',
+  'rules/AGENTS.md',
+  'docs/harness/antigravity.md',
+]) {
+  const txt = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (/23\s+playbooks/i.test(txt)) {
+    console.error(`Stale '23 playbooks' text found in ${rel}`);
     process.exit(1);
   }
 }
@@ -109,6 +125,44 @@ for (const skill of nonPrincipleSkills) {
   const cmdFile = path.join(commandsDir, `${skill}.toml`);
   if (!fs.existsSync(cmdFile)) {
     console.error(`Missing command manifest: commands/${skill}.toml`);
+    process.exit(1);
+  }
+}
+
+// Worker kickoff doc and 22 playbooks check
+const workerDoc = path.join(skillsDir, 'poteto-mode', 'worker.md');
+if (!fs.existsSync(workerDoc)) {
+  console.error('Missing skills/poteto-mode/worker.md');
+  process.exit(1);
+}
+
+const playbooksDir = path.join(skillsDir, 'poteto-mode', 'playbooks');
+const playbooks = fs.readdirSync(playbooksDir).filter((f) => f.endsWith('.md'));
+if (playbooks.length !== 22) {
+  console.error(`Expected 22 playbooks, found ${playbooks.length}`);
+  process.exit(1);
+}
+
+for (const retired of [
+  'skills/poteto-mode/playbooks/orchestrate.md',
+  'skills/poteto-mode/scripts/check-plan.mjs',
+  'skills/how/references',
+  'skills/why/references',
+  'skills/reflect/references',
+  'skills/architect/references',
+]) {
+  if (fs.existsSync(path.join(root, retired))) {
+    console.error(`Retired path still exists: ${retired}`);
+    process.exit(1);
+  }
+}
+
+const agentsDir = path.join(root, 'agents');
+for (const agentFile of fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'))) {
+  const content = fs.readFileSync(path.join(agentsDir, agentFile), 'utf8');
+  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (fmMatch && /^model:\s*(claude-|grok-|gemini-|cursor-)/m.test(fmMatch[1])) {
+    console.error(`Cursor-specific model slug in agents/${agentFile} breaks agy agent loading`);
     process.exit(1);
   }
 }

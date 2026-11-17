@@ -11,7 +11,7 @@ When executing pstack Playbooks, Skills, and Principles on Antigravity (`agy`), 
 | pstack / Cursor Action | Antigravity (`agy`) Equivalent | Operational Guidance |
 | :--- | :--- | :--- |
 | `Task` / Subagents | `invoke_subagent` | `TypeName: "self"` for code-writing / implementation delegates (`poteto-agent`); `TypeName: "research"` for read-only investigation, review, or forensics. |
-| `environment: "cloud"` / Worktree isolation | `Workspace: "branch"` or `Workspace: "share"` | Pass `Workspace: "branch"` to give each subagent an isolated branch workspace in parallel runs (`/arena`, `/swarm`, `/architect`). |
+| `environment: "cloud"` / Worktree isolation | `Workspace: "branch"` or `Workspace: "share"` | Pass `Workspace: "branch"` to give each subagent an isolated branch workspace in parallel runs (`/arena`, `/swarm`). |
 | `run_in_background: true` | Default `invoke_subagent` behavior | Subagents run in background asynchronously and notify parent upon completion (Reactive Wakeup — do not poll). |
 | `resume` / follow-up subagent communication | `send_message` | Communicate directly with a running subagent using its `conversationId`. |
 | `AskQuestion` | `ask_question` | Native multiple-choice interactive tool with `question`, `options`, and `is_multi_select`. |
@@ -48,9 +48,9 @@ Cite the leaf principle skill that shaped any architectural or procedural decisi
 ## 4. Playbooks & Skills
 
 When invoked via slash command or triggered by task type:
-- `/poteto-mode` — Match the task to one of the 23 playbooks (Bug fix, Perf, Hillclimb, Feature, Refactoring, Prototype, Shipping, etc.).
-- `/how` & `/why` — Trace runtime flow and deep architecture rationale.
-- `/architect` — Settle callers, types, and boundary shapes before code.
+- `/poteto-mode` — Match the task to one of the 22 playbooks (Bug fix, Perf, Hillclimb, Feature, Refactoring, Prototype, Shipping, etc.). Lead every spawned agent's kickoff with `Read <path>/worker.md before anything else.` (`<path>` is the absolute path of `skills/poteto-mode`).
+- `/how` & `/why` — Trace runtime flow or dig up commit and PR rationale.
+- `/architect` — Trace touched systems, sketch two shapes, and settle boundaries (or run `/arena` when contested).
 - `/arena` & `/swarm` — Parallel candidate bakeoffs and worker fan-outs.
 - `/interrogate` — Adversarial multi-model code review.
 - `/tdd` — Failing test first, then fix, then refactor.

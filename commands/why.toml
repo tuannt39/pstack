@@ -1,2 +1,2 @@
-description = "Archaeology across git log, issues, docs for rationale"
+description = "Trace commits and PR discussions for the rationale behind code"
 prompt = "Use /skill:why {{args}}"

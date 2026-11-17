@@ -2,9 +2,9 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "pstack",
   "displayName": "pstack (Poteto Mode)",
-  "version": "0.15.36",
+  "version": "0.15.43",
   "logo": "assets/logo.png",
-  "description": "Rigorous agent workflows you can parallelize with confidence — 23 playbooks, 24 principles, and deliberate subagents.",
+  "description": "Rigorous agent workflows you can parallelize with confidence — 22 playbooks, 24 principles, and deliberate subagents.",
   "suggestedPrompts": [
     "/poteto-mode Investigate how this subsystem works and trace the runtime flow",
     "/poteto-mode Reproduce this bug first, then fix the root cause and verify"

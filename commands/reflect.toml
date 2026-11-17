@@ -1,2 +1,2 @@
-description = "Review transcripts in parallel and propose high-leverage skill edits"
+description = "Mine the active transcript and propose durable skill edits"
 prompt = "Use /skill:reflect {{args}}"

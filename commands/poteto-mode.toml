@@ -1,2 +1,2 @@
-description = "Default entry point for rigorous engineering work (23 playbooks)"
+description = "Default entry point for rigorous engineering work (22 playbooks)"
 prompt = "Use /skill:poteto-mode {{args}}"
