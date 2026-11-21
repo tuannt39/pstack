@@ -19,7 +19,8 @@ const BOOTSTRAP_MARKER = "pstack:poteto-mode bootstrap for omp";
 const extensionDir = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(extensionDir, "../..");
 const skillsDir = resolve(packageRoot, "skills");
-const bootstrapSkillPath = resolve(skillsDir, "poteto-mode", "SKILL.md");
+const potetoSkillDir = resolve(skillsDir, "poteto-mode");
+const bootstrapSkillPath = resolve(potetoSkillDir, "SKILL.md");
 const commandsDir = resolve(packageRoot, "commands");
 
 let cachedBootstrap: string | null | undefined;
@@ -59,6 +60,11 @@ interface CommandOptions {
 	handler: (args: string, ctx?: CommandContext) => void | Promise<void>;
 }
 
+interface SendUserMessageOptions {
+	deliverAs?: "steer" | "followUp" | "aside";
+	attribution?: "user" | "agent";
+}
+
 interface ExtensionAPI {
 	on(event: "resources_discover", handler: () => Promise<ResourceDiscoverResult>): void;
 	on(
@@ -70,13 +76,24 @@ interface ExtensionAPI {
 		handler: (event: ContextEvent) => Promise<{ messages: ContextMessage[] } | undefined>,
 	): void;
 	registerCommand(name: string, options: CommandOptions): void;
-	sendUserMessage(message: string, options?: { expandPromptTemplates?: boolean; deliverAs?: "followUp" }): void;
+	sendUserMessage(message: string, options?: SendUserMessageOptions): void;
+}
+
+function resolveUserSkillsDir(): string {
+	const customAgentDir = process.env.PI_CODING_AGENT_DIR?.trim();
+	const agentDir = customAgentDir ? resolve(customAgentDir) : resolve(homedir(), ".omp", "agent");
+	return resolve(agentDir, "skills");
+}
+
+function stripFrontmatter(markdown: string): string {
+	const match = markdown.match(/^---\r?\n[\s\S]*?\r?\n---/);
+	return (match ? markdown.slice(match[0].length) : markdown).trim();
 }
 
 function syncSkillsToUserAgentDir(sourceSkillsDir: string): number {
 	let activeCount = 0;
 	try {
-		const userSkillsDir = resolve(homedir(), ".omp", "agent", "skills");
+		const userSkillsDir = resolveUserSkillsDir();
 		if (!existsSync(userSkillsDir)) {
 			mkdirSync(userSkillsDir, { recursive: true });
 		}
@@ -89,18 +106,17 @@ function syncSkillsToUserAgentDir(sourceSkillsDir: string): number {
 			const targetPath = resolve(userSkillsDir, skill);
 			try {
 				const targetStat = lstatSync(targetPath);
-				// If target exists and is a real directory (not a symlink), preserve user edits
 				if (!targetStat.isSymbolicLink()) {
 					continue;
 				}
-				// If target is a symlink pointing to the current source, it is already synced
 				if (existsSync(targetPath) && realpathSync(targetPath) === realpathSync(sourcePath)) {
 					continue;
 				}
-				// Remove stale or broken symlink
 				rmSync(targetPath, { force: true });
-			} catch {
-				// Target does not exist, proceed to link
+			} catch (err) {
+				if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") {
+					continue;
+				}
 			}
 
 			try {
@@ -109,7 +125,7 @@ function syncSkillsToUserAgentDir(sourceSkillsDir: string): number {
 				try {
 					cpSync(sourcePath, targetPath, { recursive: true });
 				} catch {
-					// Silent fallback
+					continue;
 				}
 			}
 		}
@@ -131,7 +147,7 @@ function loadCommands(commandsPath: string): Array<{ name: string; description: 
 		for (const file of files) {
 			if (!file.endsWith(".toml")) continue;
 			const name = file.slice(0, -5);
-			let description = `Invoke /skill:${name}`;
+			let description = `Invoke /${name}`;
 			try {
 				const content = readFileSync(resolve(commandsPath, file), "utf8");
 				const match = content.match(/^description\s*=\s*"([^"]+)"/m);
@@ -139,20 +155,32 @@ function loadCommands(commandsPath: string): Array<{ name: string; description: 
 					description = match[1];
 				}
 			} catch {
-				// Use fallback description
+				description = `Invoke /${name}`;
 			}
 			result.push({ name, description });
 		}
 	} catch {
-		// Silent fallback
+		return result;
 	}
 	return result;
+}
+
+function buildSkillInvocationPrompt(skillName: string, args: string): string {
+	const trimmedArgs = String(args || "").trim();
+	const skillDir = resolve(skillsDir, skillName);
+	const skillPath = resolve(skillDir, "SKILL.md");
+	try {
+		const body = stripFrontmatter(readFileSync(skillPath, "utf8"));
+		const header = `<skill name="${skillName}" path="${skillPath}" base_dir="${skillDir}">\n${body}\n</skill>`;
+		return trimmedArgs ? `${header}\n\n${trimmedArgs}` : header;
+	} catch {
+		return trimmedArgs ? `/skill:${skillName} ${trimmedArgs}` : `/skill:${skillName}`;
+	}
 }
 
 export default function pstackPiExtension(pi: ExtensionAPI): void {
 	let injectBootstrap = true;
 
-	// Automatically ensure skills are present in ~/.omp/agent/skills/ for prompt <skills> inclusion
 	const activeSkillCount = syncSkillsToUserAgentDir(skillsDir);
 
 	pi.on("resources_discover", async () => ({
@@ -164,7 +192,7 @@ export default function pstackPiExtension(pi: ExtensionAPI): void {
 		ctx?.ui?.notify?.(`pstack (poteto-mode) loaded: ${activeSkillCount} skills active`, "info");
 	});
 
-	pi.on("session_switch", async (_event?: unknown, ctx?: CommandContext) => {
+	pi.on("session_switch", async () => {
 		injectBootstrap = true;
 	});
 
@@ -203,25 +231,23 @@ export default function pstackPiExtension(pi: ExtensionAPI): void {
 		};
 	});
 
-	// Helper for routing slash commands to skill prompts with template expansion
-	const sendSkillAlias = (skillName: string, args: string, ctx?: CommandContext): void => {
-		const trimmedArgs = String(args || "").trim();
-		const prompt = trimmedArgs ? `${skillName} ${trimmedArgs}` : skillName;
+	const sendSkillAlias = async (skillName: string, args: string, ctx?: CommandContext): Promise<void> => {
+		const prompt = buildSkillInvocationPrompt(skillName, args);
 
 		if (ctx?.isIdle?.() === false) {
-			pi.sendUserMessage(prompt, { expandPromptTemplates: true, deliverAs: "followUp" });
-			ctx?.ui?.notify?.(`${skillName} queued as follow-up.`, "info");
+			pi.sendUserMessage(prompt, { deliverAs: "followUp", attribution: "user" });
+			ctx?.ui?.notify?.(`/${skillName} queued as follow-up.`, "info");
 			return;
 		}
 
-		pi.sendUserMessage(prompt, { expandPromptTemplates: true });
+		pi.sendUserMessage(prompt, { attribution: "user" });
 	};
 
 	const commands = loadCommands(commandsDir);
 	for (const cmd of commands) {
 		pi.registerCommand(cmd.name, {
 			description: cmd.description,
-			handler: (args: string, ctx?: CommandContext) => sendSkillAlias(`/skill:${cmd.name}`, args, ctx),
+			handler: (args: string, ctx?: CommandContext) => sendSkillAlias(cmd.name, args, ctx),
 		});
 	}
 }
@@ -230,29 +256,30 @@ function getBootstrapContent(): string | null {
 	if (cachedBootstrap !== undefined) return cachedBootstrap;
 
 	try {
-		const skillContent = readFileSync(bootstrapSkillPath, "utf8");
-		const frontmatterMatch = skillContent.match(/^---\r?\n[\s\S]*?\r?\n---/);
-		const body = (frontmatterMatch ? skillContent.slice(frontmatterMatch[0].length) : skillContent).trim();
+		const body = stripFrontmatter(readFileSync(bootstrapSkillPath, "utf8"));
 
 		const toolMapping = `## OMP (oh-my-pi) Native Tool Mapping
 
 When executing pstack Playbooks and Principles on \`omp\`, use omp's native tools instead of generic shell commands or Cursor names:
 
-- **Subagents & Delegation (\`Task\`):** Use omp's native \`task\` tool. Each subagent runs in an isolated Git Worktree with automatic schema validation and internal IRC messaging (\`agent://<id>\`).
+- **Subagents & Delegation (\`Task\`):** Use omp's native \`task\` tool and wait on background jobs with \`wait\`. Each subagent runs in an isolated Git Worktree with automatic schema validation and internal IRC messaging (\`agent://<id>\`).
 - **User Questions (\`AskQuestion\`):** Use omp's native \`ask\` tool with structured chip options and trade-off descriptions.
 - **Todo Lists (\`Open a todolist\`):** Use omp's native \`todo\` tool. Always pair \`todo\` mutations in the same turn as your actual tool execution.
 - **Code Edits (\`Edit\`):** Use omp's native \`edit\` tool with content-hash protection (\`[path#tag]\`). Never use \`sed\` or bulk regex scripts when surgical edits apply.
-- **Searching & Reading:** Use omp's native \`grep\` (PCRE2 regex), \`glob\`, and \`read\` (with inline line slices, e.g. \`path:line-range\`).
+- **Searching & Reading:** Use omp's native \`grep\` (PCRE2 regex), \`glob\`, \`find\` (semantic code search), \`read\` (with inline line slices, e.g. \`path:line-range\`), and \`web_search\`.
 - **Command Execution:** Use omp's native \`bash\` running on the in-process Rust brush shell with 58 built-ins.
 - **Runtime Forensics & Debugging:** Use omp's native \`debug\` (DAP protocol integration) to attach to processes, set breakpoints, and inspect memory without guessing.
-- **Deep Trace Analysis:** Use omp's native \`eval\` (Bun / Python loopback kernel) which can call back into agent tools via \`await tool.<name>()\` to filter profiles before consuming context.
-- **AST Refactoring & Code Intelligence:** Use \`xd://lsp\` (diagnostics, references, type definitions) and \`xd://ast_edit\` (AST transformations) to guarantee type safety and clean import renames.
+- **Deep Trace Analysis:** Use omp's native \`eval\` (Python/JS kernel with built-in \`browser\` and \`computer\` helpers) which can call back into agent tools via \`await tool.<name>()\` to filter profiles before consuming context.
+- **AST Refactoring & Code Intelligence:** Use built-in \`lsp\` (diagnostics, references, type definitions) and \`ast_edit\` (AST transformations), plus optional \`ast_grep\`, to guarantee type safety and clean import renames.
+- **Session Checkpoints & Safety (Optional Tools):** When enabled in settings, use \`checkpoint\`, \`rewind\`, \`context_notes\`, \`new_context\`, \`github\`, and \`security_scan\`.
 - **24 Principles Citation:** Always name the exact principle (e.g. \`principle-laziness-protocol\`, \`principle-boundary-discipline\`) and state the concrete technical choice it shaped.`;
 
 		cachedBootstrap = `${EXTREMELY_IMPORTANT_MARKER}
 ${BOOTSTRAP_MARKER}
 
 You are running with pstack (poteto-mode) enabled.
+Skill path: ${bootstrapSkillPath}
+Skill directory: ${potetoSkillDir}
 
 The poteto-mode skill content and 24 Principles index are included below and are loaded for this session. Apply them rigorously to all engineering tasks.
 

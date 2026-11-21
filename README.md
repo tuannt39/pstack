@@ -24,8 +24,9 @@ git clone https://github.com/tuannt39/pstack.git
 omp plugin link ./pstack
 ```
 
-Verify your installation:
+Verify or upgrade your installation:
 ```bash
+omp plugin upgrade
 omp plugin doctor
 ```
 
@@ -48,14 +49,16 @@ agy plugin install ./pstack
 
 Verify your installation:
 ```bash
-agy plugin list
+agy plugin list --json
+agy agents
 agy plugin validate ./pstack
 ```
 
 Once installed:
 - All 58 skills are automatically discovered and invocable via slash commands (`/poteto-mode`, `/how`, `/why`, `/architect`, `/arena`, `/swarm`, `/interrogate`, `/tdd`, etc.).
-- Both subagents (`poteto-agent` and `comment-sicko`) are registered.
-- `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and Antigravity tool mappings into every session.
+- Both subagents (`poteto-agent` and `comment-sicko`) are registered and runnable with `invoke_subagent` or `agy --agent poteto-agent`.
+- `rules/AGENTS.md` automatically injects the `poteto-mode` bootstrap and Antigravity tool mappings (`invoke_subagent`, `run_workflow`, `swarm`, `/browser`, and `Shift+Tab` execution modes with `auto`/`accept-edits`/`plan`) into every session.
+- Use `Orchestrator` or `gemini-4-neon-xhigh` (`agy models`) for deep planning and cross-model review panels.
 - Full guide: [`docs/harness/antigravity.md`](docs/harness/antigravity.md).
 
 ---
@@ -91,10 +94,10 @@ Based on the technical deep-dive in `Phân Tích Kỹ Thuật AI Agent.pdf`:
 | **Time-Traveling Stream Rules (TTSR)** | Intercepts forbidden patterns (`useEffect`, `waitForTimeout`, `as any`) mid-stream at the token level, aborting and injecting remediation hints instantly. |
 | **Real-Time Advisor Role** | A second, independent model watches every turn of the main agent to prevent shortcuts. |
 | **Hashline Edit Format** | Line content hashes (`[file.ts#A1B2]`) prevent misapplied diffs and save 61% output tokens. |
-| **Native In-Process Tools** | Rust brush shell (58 coreutils), PCRE2 `grep`, `glob`, `read` with slice selectors. |
+| **Native In-Process Tools** | Rust brush shell (58 coreutils), PCRE2 `grep`, `glob`, semantic `find`, `lsp`, `ast_edit`, and `read` with slice selectors. |
 | **DAP Debugger Protocol (`debug`)** | Direct breakpoints, stack frames, and memory inspection without guessing. |
-| **Loopback Eval Kernel (`eval`)** | Python / Bun workers can call back into agent tools (`await tool.read()`) to filter profiling traces before filling context. |
-| **Native Worktree Concurrency (`task`)** | Runs parallel subagents (`/arena`, `/swarm`) in isolated Git Worktrees with schema validation. |
+| **Loopback Eval Kernel (`eval`)** | Python / JS workers with `browser` and `computer` helpers can call back into agent tools (`await tool.read()`) and resolve `local://N.log` logs before filling context. |
+| **Native Worktree Concurrency & Search** | Runs parallel subagents (`/arena`, `/swarm`) in isolated Git Worktrees (`task` + `wait`) and supports keyless `web/keenable` web search. |
 
 ---
 
@@ -127,13 +130,15 @@ Configure your model roles to maximize cost-efficiency and reasoning depth:
 ```yaml
 # ~/.omp/agent/config.yml
 modelRoles:
-  default: "anthropic/claude-sonnet-4-6:high"   # builder: daily code implementation
-  smol: "google/gemini-3.5-flash-lite"          # worker: fast exploration, swarm workers
-  slow: "anthropic/claude-opus-4-7:max"          # judge: architecture (/architect) & eval
-  plan: "anthropic/claude-opus-4-7:high"         # planner: task planning
-  advisor: "xai/grok-4.6:high"                  # peer / watchdog: real-time streaming monitor
-  vision: "google/gemini-3.8-flash"             # visual parity checking
-  commit: "google/gemini-3.5-flash-lite"        # conventional commits
+  default: "anthropic/claude-sonnet-5-5:high"   # builder: daily code implementation
+  smol: "google/gemini-4-hydrogen:high"         # worker: fast exploration, swarm workers
+  slow: "anthropic/claude-opus-5-5:xhigh"       # judge: architecture (/architect) & eval
+  plan: "google/gemini-4-neon:xhigh"            # planner: task planning
+  advisor: "google/gemini-4-neon:high"          # peer / watchdog: real-time streaming monitor
+  task: "anthropic/claude-sonnet-5-5:high"      # subagent tasks
+  vision: "google/gemini-3.8-flash:high"        # visual parity checking
+  commit: "google/gemini-4-hydrogen:medium"     # conventional commits
+  web: "web/keenable"                           # keyless web search (omp v19.0+)
 ```
 
 See `templates/omp/config.sample.yml` for the complete template with TTSR rules.

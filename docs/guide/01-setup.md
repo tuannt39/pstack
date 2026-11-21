@@ -61,6 +61,6 @@ Pick something real but small, and describe it the way you'd describe it to a co
 
 Watch the todo list. Its first items are the matched playbook's steps copied in, the Feature playbook for this prompt.
 
-From here you can type normal follow-ups. To keep `/poteto-mode` on for the whole chat, pick it from the `/` menu with Option+Enter (Mac) or Alt+Enter (Windows) instead of Enter. That makes it a [Custom Mode](https://cursor.com/docs/skills#using-a-skill-as-a-custom-mode), which stays in context on every turn until you exit it. Custom Modes are available in the Agents Window and the CLI. In omp (oh-my-pi), pstack loads automatically as an installed plugin with native tool hooks. Plain Enter attaches the skill to one message, and it fades as the chat moves on.
+From here you can type normal follow-ups. To keep `/poteto-mode` on for the whole chat, pick it from the `/` menu with Option+Enter (Mac) or Alt+Enter (Windows) instead of Enter. That makes it a [Custom Mode](https://cursor.com/docs/skills#using-a-skill-as-a-custom-mode), which stays in context on every turn until you exit it. Custom Modes are available in the Agents Window and the CLI. In omp (oh-my-pi), pstack loads automatically as an installed plugin with native tool hooks, and in Google Antigravity (agy), `rules/AGENTS.md` loads automatically while the plugin is enabled. Plain Enter attaches the skill to one message, and it fades as the chat moves on.
 
 Next: [Route work through `/poteto-mode`](./02-poteto-mode.md).

@@ -4,7 +4,7 @@ In the pstack methodology by Lauren Tan, a **Verification Skill** is the foundat
 
 ## 1. The 6 Mandatory Sections of a Verification Skill
 
-Every generated or maintained verification skill (`.claude/skills/verify-<app>/SKILL.md` or `.cursor/skills/verify-<app>/SKILL.md` or `.omp/skills/verify-<app>/SKILL.md`) must interview the codebase directly ("interview the repo, not the human") and contain these 6 sections:
+Every generated or maintained verification skill (`.agents/skills/verify-<app>/SKILL.md`, `.claude/skills/verify-<app>/SKILL.md`, `.cursor/skills/verify-<app>/SKILL.md`, or `.omp/skills/verify-<app>/SKILL.md`) must interview the codebase directly ("interview the repo, not the human") and contain these 6 sections:
 
 1. **Launch (Isolated startup):**
    - Exact command to boot the app from clean state with migrations and seed data.

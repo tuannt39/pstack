@@ -1,10 +1,10 @@
 # pstack in omp (oh-my-pi)
 
-pstack skills run natively inside **omp** (`oh-my-pi`). By packaging pstack with native extension hooks (`package.json` and `.pi/extensions/pstack.ts`), all 58 skills, playbooks, and 24 engineering principles are auto-discovered and loaded with zero manual copying.
+pstack skills run natively inside **omp** (`oh-my-pi` v19.0+). By packaging pstack with native extension hooks (`package.json` and `.pi/extensions/pstack.ts`), all 58 skills, 22 playbooks, and 24 engineering principles are auto-discovered and loaded with zero manual copying.
 
-## 1. Installation
+## 1. Installation & Management
 
-Install pstack into your omp installation directly from GitHub:
+Install and manage pstack in `omp`:
 
 ```bash
 # Install directly from Git
@@ -12,33 +12,42 @@ omp plugin install git:github.com/tuannt39/pstack
 
 # Or install from a local repository checkout
 omp plugin link ./pstack
+
+# Upgrade plugins, inspect health, or inspect active config layers
+omp plugin upgrade
+omp plugin doctor
+omp config list --scope global
+
+# Optional: unpack bundled subagents
+omp agents unpack
 ```
 
 Once installed:
-- `resources_discover` automatically mounts all skills under `./skills`.
-- Every session start and post-compaction event injects the `poteto-mode` bootstrap and inline 24 principles index.
-- You can invoke `/poteto-mode` directly, or let the router guide complex engineering tasks.
+- `resources_discover` automatically mounts all skills under `./skills` and links them into `~/.omp/agent/skills`.
+- Every session start, session switch, and post-compaction event injects the `poteto-mode` bootstrap and inline 24 principles index.
+- You can invoke `/poteto-mode` directly or let the router guide complex engineering tasks.
 
 ## 2. Tool Mapping
 
-omp provides native Rust-powered and in-process tools that map directly to pstack conventions:
+`omp` provides native Rust-powered and in-process tools that map directly to pstack conventions:
 
 | Cursor / Concept | omp Native Tool | Capability & Advantage |
 | --- | --- | --- |
-| `Task` / Subagents | `task` | Spawns concurrent subagents in isolated Git Worktrees with schema validation and `agent://<id>` IRC messaging. |
+| `Task` / Subagents | `task`, `wait` | Spawns concurrent subagents in isolated Git Worktrees with schema validation, IRC messaging (`agent://<id>`), and background waiting (`wait`). |
 | `AskQuestion` | `ask` | Structured prompt with single/multi-select chips and trade-off previews. |
 | Open a todolist | `todo` | Atomic operations (`init`, `start`, `done`, `block`). Dispatched in parallel with execution tools. |
-| `Edit` | `edit` | Hashline editing format with snapshot content hashes (`[file.ts#A1B2]`). Immune to drift and saves 61% output tokens. |
-| `View` / `Read` | `read` | Unified file, directory, SQLite, PDF, archive reader with inline line slicing (`path:10-50`). |
-| `Grep` / `Glob` | `grep` / `glob` | Built-in PCRE2 regex search and filesystem globbing inside the omp Rust core (zero fork/exec overhead). |
+| `Edit` | `edit` | Hashline editing format with snapshot content hashes (`[file.ts#A1B2]`) to prevent drift and save output tokens. |
+| `View` / `Read` | `read` | Unified file, directory, SQLite, PDF, archive, and URL reader with inline line slicing (`path:10-50`). |
+| `Grep` / `Glob` / Search | `grep`, `glob`, `find`, `web_search` | PCRE2 regex search, filesystem globbing, semantic code `find`, and built-in `web_search`. |
 | `Bash` | `bash` | Persistent shell powered by Rust brush shell with 58 built-in coreutils. |
-| Runtime Forensics | `debug` | DAP (Debugger Adapter Protocol) integration. Attach to JVM, Python, Node, Go processes, set breakpoints, inspect stack frames. |
-| Profile / Trace Analysis | `eval` | Persistent Bun/Python loopback kernel. Code inside `eval` can call back into agent tools via `await tool.<name>()`. |
-| Code Intelligence | `xd://lsp` & `xd://ast_edit` | LSP queries (definitions, references, renames) and AST-aware refactorings. |
+| Runtime Forensics | `debug` | DAP (Debugger Adapter Protocol) integration. Attach to JVM, Python, Node, Go processes, set breakpoints, and inspect stack frames. |
+| Profile / Trace Analysis | `eval` | Persistent Python/JS kernel with `browser` and `computer` helpers. Code inside `eval` can call agent tools via `await tool.<name>()`. |
+| Code Intelligence | `lsp`, `ast_edit`, `ast_grep` | Built-in LSP queries (definitions, references, renames) and AST-aware search and refactorings. |
+| Optional Session & Safety | `checkpoint`, `rewind`, `context_notes`, `new_context`, `github`, `security_scan` | Git-based checkpoints, persistent context notes, GitHub operations, and security scans when enabled. Session logs resolve under `local://N.log` (`v19.0+`). |
 
 ## 3. Subagent Delegation
 
-When running playbooks that fan out (such as `/arena` or `/swarm`), omp's `task` tool provides native worktree isolation:
+When running playbooks that fan out (such as `/arena` or `/swarm`), `omp`'s `task` tool provides native worktree isolation:
 
 ```typescript
 // Example: Delegating an arena or swarm slice via omp's task tool
@@ -65,31 +74,44 @@ Subagents run in parallel without stepping on each other's files, and coordinate
 
 ## 4. Multi-Model Role Routing (`~/.omp/agent/config.yml`)
 
-pstack assigns roles (worker, builder, judge, peer) based on model strengths. In omp, configure these via `modelRoles` in `~/.omp/agent/config.yml`:
+pstack assigns roles (worker, builder, judge, advisor) based on model strengths. Configure these via `modelRoles` in `~/.omp/agent/config.yml`:
 
 ```yaml
 # ~/.omp/agent/config.yml
 modelRoles:
   # [builder] Daily implementation, refactoring, bug fixes
-  default: "anthropic/claude-sonnet-4-6:high"
+  default: "anthropic/claude-sonnet-5-5:high"
 
   # [worker] Fast exploration, simple edits, swarm workers
-  smol: "google/gemini-3.5-flash-lite"
+  smol: "google/gemini-4-hydrogen:high"
 
   # [judge] Deepest reasoning: /architect, root-cause forensics, eval judge
-  slow: "anthropic/claude-opus-4-7:max"
+  slow: "anthropic/claude-opus-5-5:xhigh"
 
   # [planner] Task planning and playbook decomposition
-  plan: "anthropic/claude-opus-4-7:high"
+  plan: "google/gemini-4-neon:xhigh"
 
   # [peer / watchdog] Real-time streaming monitor watching main agent turns
-  advisor: "xai/grok-4.6:high"
+  advisor: "google/gemini-4-neon:high"
 
-  # Visual parity inspection
-  vision: "google/gemini-3.8-flash"
+  # Subagent & visual parity defaults
+  task: "anthropic/claude-sonnet-5-5:high"
+  vision: "google/gemini-3.8-flash:high"
+  commit: "google/gemini-4-hydrogen:medium"
 
-  # Conventional commit messages
-  commit: "google/gemini-3.5-flash-lite"
+  # [search] Keyless Keenable web search routing (omp v19.0+)
+  web: "web/keenable"
+
+# Enable advisor watchdog on subagents
+advisor:
+  enabled: true
+
+task:
+  agentAdvisor:
+    task: "on"
+    scout: "on"
+    reviewer: "on"
+    security-reviewer: "on"
 
 # Path-based overrides: force strongest model on high-risk code
 pathModelOverrides:
@@ -99,18 +121,21 @@ pathModelOverrides:
 
 # Automatic fallback chains on rate limits or 5xx
 retry:
+  rateLimitWalksChain: true
   fallbackChains:
     default:
-      - "xai/grok-4.6:high"
-      - "openai-codex/gpt-5.5:high"
+      - "google/gemini-4-hydrogen:high"
+      - "anthropic/claude-opus-5-5:high"
     slow:
-      - "openai-codex/gpt-5.5:max"
-      - "xai/grok-4.6:high"
+      - "google/gemini-4-neon:xhigh"
+      - "anthropic/claude-opus-5-5:high"
 ```
+
+If you authenticate via Antigravity inside `omp`, use `google-antigravity/*` slugs such as `google-antigravity/gemini-4-neon:xhigh`, `google-antigravity/gemini-4-hydrogen:high`, `google-antigravity/claude-opus-5-5:high`, or `google-antigravity/claude-sonnet-5-5:high`.
 
 ## 5. Time-Traveling Stream Rules (TTSR)
 
-Instead of waiting for an agent to finish writing a file and fail a linter on CI, omp's **TTSR** intercepts forbidden anti-patterns mid-stream, aborts generation, injects a remediation reminder, and retries:
+Instead of waiting for an agent to finish writing a file and fail a linter on CI, `omp`'s **TTSR** intercepts forbidden anti-patterns mid-stream, aborts generation, injects a remediation reminder, and retries:
 
 ```yaml
 # Add to ~/.omp/agent/config.yml
@@ -142,20 +167,20 @@ ttsr:
 ## 6. Daily Super-Workflows on omp
 
 ### Workflow A: Checkpoint & Rewind Investigation
-When investigating subtle bugs (Playbook `Bug fix` or `Investigation`):
+When investigating subtle bugs (Playbook `Bug fix` or `Investigation`, with optional `checkpoint` and `rewind` enabled):
 1. Call `checkpoint` before reading dozens of unfamiliar files.
 2. Form competing hypotheses, read files, run reproduction tests.
 3. Once the root cause is confirmed, call `rewind`: all intermediate exploration turns are wiped from the context window, leaving only the concise diagnosis.
-4. Implement the fix with 100% fresh, uncluttered context.
+4. Implement the fix with a clean, uncluttered context.
 
 ### Workflow B: DAP Debugger Forensics
 When a process hangs, deadlocks, or loops indefinitely:
-1. Use omp's `debug` tool to attach via DAP (JDWP for Java, debugpy for Python, lldb/delve for Go/Rust).
+1. Use `omp`'s `debug` tool to attach via DAP (JDWP for Java, debugpy for Python, lldb/delve for Go/Rust).
 2. Set breakpoints and inspect local variables and threads directly.
 3. Eliminate guesswork with ground-truth runtime state.
 
 ### Workflow C: Loopback Trace Forensics
 When analyzing large CPU traces or heap profiles:
-1. Run a script inside `eval` (Bun or Python).
+1. Run a script inside `eval` (Python or JS).
 2. The script processes the raw JSON trace, extracts the top 5 bottleneck functions, and calls `await tool.read({ path: funcPath })` to fetch the source code.
 3. Only the summarized findings enter the conversation, protecting the context window.

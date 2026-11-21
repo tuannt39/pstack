@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PSTACK_DIR="$(dirname "$SCRIPT_DIR")"
 SKILLS_SRC="$PSTACK_DIR/skills"
-TARGET_DIR="${HOME}/.omp/agent/skills"
+TARGET_DIR="${PI_CODING_AGENT_DIR:-${HOME}/.omp/agent}/skills"
 
 ACTION="${1:-link}"
 

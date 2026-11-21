@@ -1,7 +1,7 @@
 ---
 name: interrogate-arch
 description: Architectural and complexity reviewer evaluating boundary discipline, cognitive load, and caller-first contracts.
-model: anthropic/claude-opus-4-7:high, openai-codex/gpt-5.5:high
+model: anthropic/claude-opus-5-5:high, google/gemini-4-neon:xhigh
 ---
 
 You are an adversarial architecture reviewer in pstack's `/interrogate` panel.

@@ -4,25 +4,29 @@
 # 1. Multi-Model Role Routing
 modelRoles:
   # [builder] Everyday coding, bug fixes, refactorings
-  default: "anthropic/claude-sonnet-4-6:high"
+  default: "anthropic/claude-sonnet-5-5:high"
 
   # [worker] Fast exploration, simple scripts, swarm slice workers
-  smol: "google/gemini-3.5-flash-lite"
+  smol: "google/gemini-4-hydrogen:high"
 
   # [judge] Deepest reasoning: /architect, root-cause forensics, eval judge
-  slow: "anthropic/claude-opus-4-7:max"
+  slow: "anthropic/claude-opus-5-5:xhigh"
 
   # [planner] Plan mode and multi-phase playbook decomposition
-  plan: "anthropic/claude-opus-4-7:high"
+  plan: "google/gemini-4-neon:xhigh"
 
   # [peer / watchdog] Real-time streaming monitor watching main agent turns
-  advisor: "xai/grok-4.6:high"
+  advisor: "google/gemini-4-neon:high"
 
-  # Visual parity inspection
-  vision: "google/gemini-3.8-flash"
+  # Subagent & visual parity defaults
+  task: "anthropic/claude-sonnet-5-5:high"
+  vision: "google/gemini-3.8-flash:high"
 
   # Conventional commit messages
-  commit: "google/gemini-3.5-flash-lite"
+  commit: "google/gemini-4-hydrogen:medium"
+
+  # Keyless web search routing (omp v19.0+)
+  web: "web/keenable"
 
 # 2. Path-Scoped Model Overrides
 pathModelOverrides:
@@ -32,28 +36,38 @@ pathModelOverrides:
   "**/domain/payment/**": "pi/slow"
   "**/db/migration/**": "pi/slow"
 
-# 3. Automatic Fallback Chains (Failover on 429/5xx)
+# 3. Advisor Watchdog Controls
+advisor:
+  enabled: true
+
+# 4. Automatic Fallback Chains (Failover on 429/5xx)
 retry:
+  rateLimitWalksChain: true
   fallbackChains:
     default:
-      - "xai/grok-4.6:high"
-      - "openai-codex/gpt-5.5:high"
+      - "google/gemini-4-hydrogen:high"
+      - "anthropic/claude-opus-5-5:high"
     slow:
-      - "openai-codex/gpt-5.5:max"
-      - "xai/grok-4.6:high"
+      - "google/gemini-4-neon:xhigh"
+      - "anthropic/claude-opus-5-5:high"
     smol:
-      - "anthropic/claude-haiku-5.5"
+      - "google/gemini-3.8-flash:high"
 
-# 4. Context Window & Truncation Controls
+# 5. Context Window & Truncation Controls
 context:
   toolResultMaxChars: 4000
   truncateHeadRatio: 0.6
 
-# 5. Concurrency & Subagent Controls
+# 6. Concurrency & Subagent Controls
 task:
   maxConcurrency: 8
+  agentAdvisor:
+    task: "on"
+    scout: "on"
+    reviewer: "on"
+    security-reviewer: "on"
 
-# 6. Time-Traveling Stream Rules (TTSR)
+# 7. Time-Traveling Stream Rules (TTSR)
 ttsr:
   enabled: true
   rules:

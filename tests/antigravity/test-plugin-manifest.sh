@@ -19,7 +19,7 @@ AGY_PLUGIN="$REPO_ROOT/.antigravity-plugin/plugin.json"
 [ -f "$MARKETPLACE" ] || fail "marketplace manifest missing at $MARKETPLACE"
 [ -f "$AGY_PLUGIN" ] || fail "antigravity manifest missing at $AGY_PLUGIN"
 
-# Verify required fields via node
+# Verify required fields, versions, and invariants via node
 node - "$REPO_ROOT" <<'JS'
 const fs = require('fs');
 const path = require('path');
@@ -27,6 +27,11 @@ const root = process.argv[2];
 
 const manifestPath = path.join(root, '.antigravity-plugin', 'plugin.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+if (manifest.$schema !== 'https://antigravity.google/schemas/v1/plugin.json') {
+  console.error(`Expected official $schema in .antigravity-plugin/plugin.json, got '${manifest.$schema}'`);
+  process.exit(1);
+}
 
 const required = ['name', 'displayName', 'version', 'description', 'suggestedPrompts', 'author', 'homepage', 'repository'];
 for (const field of required) {
@@ -60,7 +65,7 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 const rootManifest = JSON.parse(fs.readFileSync(path.join(root, 'plugin.json'), 'utf8'));
 const claudeManifest = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
 
-const expectedVersion = '0.15.43';
+const expectedVersion = '0.15.46';
 for (const [file, v] of [
   ['.antigravity-plugin/plugin.json', manifest.version],
   ['package.json', pkg.version],
@@ -85,6 +90,32 @@ for (const rel of [
   const txt = fs.readFileSync(path.join(root, rel), 'utf8');
   if (/23\s+playbooks/i.test(txt)) {
     console.error(`Stale '23 playbooks' text found in ${rel}`);
+    process.exit(1);
+  }
+}
+
+// Windows-safe statechart helpers must exist
+for (const rel of [
+  'skills/statechart/scripts/janitor.ts',
+  'skills/statechart/scripts/kill.ts',
+]) {
+  if (!fs.existsSync(path.join(root, rel))) {
+    console.error(`Missing statechart helper script: ${rel}`);
+    process.exit(1);
+  }
+}
+
+// No stale gemini-4-carbon references in updated skills/docs
+for (const rel of [
+  'skills/arena/SKILL.md',
+  'skills/poteto-mode/SKILL.md',
+  'skills/setup-pstack/SKILL.md',
+  'docs/harness/claude-code.md',
+  'skills/poteto-mode/references/antigravity-tools.md',
+]) {
+  const txt = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (txt.includes('gemini-4-carbon')) {
+    console.error(`Stale 'gemini-4-carbon' reference found in ${rel}`);
     process.exit(1);
   }
 }
@@ -168,15 +199,35 @@ for (const agentFile of fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'
 }
 JS
 
-# Check agy plugin validate if agy is installed
+# Check agy plugin validate --json if agy is installed, allowing only documented multi-tool warnings
 if command -v agy >/dev/null 2>&1; then
-  echo "Running agy plugin validate..."
-  output="$(agy plugin validate "$REPO_ROOT" 2>&1)" || {
-    echo "$output" >&2
-    fail "agy plugin validate failed"
+  echo "Running agy plugin validate --json..."
+  json_out="$(agy plugin validate --json "$REPO_ROOT")" || {
+    echo "$json_out" >&2
+    fail "agy plugin validate --json failed"
   }
-  echo "$output"
-  grep -qiE 'Validation passed|\[ok\]' <<<"$output" || fail "Validation did not pass"
+  node - "$json_out" <<'JS'
+const report = JSON.parse(process.argv[2]);
+const c = report.components || {};
+console.log(`Validated ${report.name} (${report.manifest}): skills ${c.skills} · agents ${c.agents} · rules ${c.rules} · hooks ${c.hooks} · mcpServers ${c.mcpServers} · sidecars ${c.sidecars}`);
+const findings = Array.isArray(report.findings) ? report.findings : [];
+const bad = findings.filter((f) => {
+  if (f.severity === 'error') return true;
+  if (f.severity === 'warning') {
+    const allowedCommands = f.file === 'commands';
+    const allowedShadowRoot = f.file === 'plugin.json' && report.manifest !== 'plugin.json';
+    return !(allowedCommands || allowedShadowRoot);
+  }
+  return false;
+});
+for (const f of findings) {
+  console.log(`  [${f.severity}] ${f.file}: ${f.message}`);
+}
+if (bad.length > 0) {
+  console.error('Unexpected validation errors or warnings:', bad);
+  process.exit(1);
+}
+JS
 else
   echo "SKIP: agy not on PATH; skipping live CLI validation"
 fi
